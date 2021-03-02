@@ -105,6 +105,7 @@ object Post : ExecutorPost {
 
                 httpURlConnection?.connect()
                 val data = httpURlConnection?.inputStream?.bufferedReader()?.readText()
+                httpURlConnection?.disconnect()
                 GlobalScope.launch(Dispatchers.Main) {
                     if (httpURlConnection?.responseCode == 200) {
                         proceed.invoke(
@@ -114,7 +115,7 @@ object Post : ExecutorPost {
                                         httpURlConnection?.responseMessage
                                 ), null
                         )
-                        httpURlConnection?.disconnect()
+
                     }
                 }
 
