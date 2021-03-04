@@ -8,6 +8,7 @@ import com.monumeena.fastrack.exception.ExecutorException
 import com.monumeena.fastrack.exception.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.*
@@ -106,7 +107,7 @@ object Post : ExecutorPost {
                 httpURlConnection?.connect()
                 val data = httpURlConnection?.inputStream?.bufferedReader()?.readText()
                 httpURlConnection?.disconnect()
-                GlobalScope.launch(Dispatchers.Main) {
+         val job =      GlobalScope.launch(Dispatchers.Main) {
                     if (httpURlConnection?.responseCode == 200) {
                         proceed.invoke(
                                 Result(
@@ -118,6 +119,8 @@ object Post : ExecutorPost {
 
                     }
                 }
+
+                job.cancel()
 
             } catch (se: SocketTimeoutException) {
                 val `in` = InputStreamReader(httpURlConnection?.errorStream)
@@ -152,7 +155,7 @@ object Post : ExecutorPost {
                     bufferedReader.close()
                 }
                 `in`.close()
-                GlobalScope.launch(Dispatchers.Main) {
+val job = GlobalScope.launch(Dispatchers.Main) {
                     val executorException = ExecutorException(
                             httpURlConnection?.responseCode!!, httpURlConnection?.responseMessage,
                             "IOException $e", stringBuilder.toString()
@@ -161,7 +164,12 @@ object Post : ExecutorPost {
                             null,
                             executorException
                     )
+
                 }
+
+
+
+                job.cancel()
 
             } catch (e: java.lang.Exception) {
                 val `in` = InputStreamReader(httpURlConnection?.errorStream)
@@ -173,7 +181,7 @@ object Post : ExecutorPost {
                 }
                 bufferedReader.close()
                 `in`.close()
-                GlobalScope.launch(Dispatchers.Main) {
+         val  job =      GlobalScope.launch(Dispatchers.Main) {
                     val executorException = ExecutorException(
                             httpURlConnection?.responseCode!!, httpURlConnection?.responseMessage,
                             " java.lang.Exception $e", stringBuilder.toString()
@@ -183,6 +191,8 @@ object Post : ExecutorPost {
                             executorException
                     )
                 }
+
+                job.cancel()
 
             } finally {
                 if (httpURlConnection != null) {
